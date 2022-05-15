@@ -12,11 +12,9 @@ import PageTitle from "../components/pageTitle";
 import { useForm } from "react-hook-form";
 import FormError from "../components/auth/FormError";
 import { gql, useMutation } from "@apollo/client";
-import {
-  MutationCreateAccountArgs,
-  MutationResponse,
-} from "../generated/graphql";
+import { MutationResponse } from "../generated/graphql";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const HeaderContainer = styled.div`
   display: flex;
@@ -31,13 +29,13 @@ const Subtitle = styled(FatLink)`
 `;
 
 interface SignUpForm {
-  firstName: string;
-  lastName: string;
-  name: string;
-  email: string;
-  username: string;
-  password: string;
-  result: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  email?: string;
+  username?: string;
+  password?: string;
+  result?: string;
 }
 
 const CREATE_MUTATION = gql`
@@ -62,38 +60,47 @@ const CREATE_MUTATION = gql`
 `;
 
 const SignUp = () => {
+  //const [username, setUsername] = useState<string | undefined>("");
   const navigate = useNavigate();
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors, isValid },
-    clearErrors,
+    getValues,
   } = useForm<SignUpForm>({
     mode: "onChange",
   });
 
   const onCompleted = (data: any) => {
+    const username = getValues("username");
     const {
-      createAccount: { ok, error },
+      createAccount: { ok },
     } = data;
     if (!ok) {
       return;
     }
-    navigate(routes.home, { replace: true });
+    navigate(routes.home, {
+      state: {
+        username,
+        message: "Account created. Please log in.",
+      },
+    });
   };
 
-  const [createAccount, { loading }] = useMutation<MutationResponse>(
+  const [createAccount, { data, loading }] = useMutation<MutationResponse>(
     CREATE_MUTATION,
     { onCompleted }
   );
 
-  const onSubmitValid = (data: SignUpForm) => {
+  const onSubmitValid = (formValid: SignUpForm) => {
+    const { username } = formValid;
     if (loading) return;
     createAccount({
-      variables: { ...data },
+      variables: { ...formValid },
     });
+    navigate(routes.home, { state: { username } });
   };
+
   return (
     <AuthLayout>
       <PageTitle title="Sign Up" />

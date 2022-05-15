@@ -1,8 +1,8 @@
 import { DefaultTheme } from "styled-components";
 
 export const lightTheme: DefaultTheme = {
-  fontColor: "#2c2c2c",
-  bgColor: "white",
+  fontColor: "rgb(38,38,38)",
+  bgColor: "#FAFAFA",
   accent: "#0095f6",
   borderColor: "rgb(219,219,219)",
 };

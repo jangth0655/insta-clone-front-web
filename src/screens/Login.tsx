@@ -16,8 +16,9 @@ import { useForm } from "react-hook-form";
 import FormError from "../components/auth/FormError";
 import { gql, useMutation } from "@apollo/client";
 import { LoginResult } from "../generated/graphql";
-import { logUserIn } from "../apollo";
+import { logUserIn, TOKEN } from "../apollo";
 import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
 
 const FacebookLogin = styled.div`
   color: #385285;
@@ -25,6 +26,11 @@ const FacebookLogin = styled.div`
     margin-left: 10px;
     font-weight: 600;
   }
+`;
+
+const Notification = styled.div`
+  margin-top: 10px;
+  color: #2ecc71;
 `;
 
 interface LoginForm {
@@ -45,14 +51,12 @@ const LOGIN_MUTATION = gql`
 
 interface LoginState {
   username?: string;
-  password?: string;
   message?: string;
 }
 
 const Login = () => {
   const location = useLocation();
-  console.log(location);
-  const state = location as LoginState | null;
+  const state = location.state as LoginState | null;
 
   const {
     register,
@@ -62,7 +66,12 @@ const Login = () => {
     clearErrors,
   } = useForm<LoginForm>({
     mode: "onChange",
+    defaultValues: {
+      username: state?.username || "",
+    },
   });
+
+  useEffect(() => {}, []);
 
   const onCompleted = (data: any) => {
     const {
@@ -76,7 +85,7 @@ const Login = () => {
     }
   };
 
-  const [login, { loading, error }] = useMutation<LoginResult>(LOGIN_MUTATION, {
+  const [login, { loading }] = useMutation<LoginResult>(LOGIN_MUTATION, {
     onCompleted,
   });
 
@@ -102,6 +111,7 @@ const Login = () => {
         <div>
           <FontAwesomeIcon icon={faInstagram} size="3x" />
         </div>
+        <Notification>{state?.message}</Notification>
         <form onSubmit={handleSubmit(onSubmitValid)}>
           <Input
             {...register("username", {
