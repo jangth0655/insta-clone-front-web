@@ -9,6 +9,14 @@ import FormBox from "../components/auth/FormBox";
 import BottomBox from "../components/auth/BottomBox";
 import { FatLink } from "../components/shared";
 import PageTitle from "../components/pageTitle";
+import { useForm } from "react-hook-form";
+import FormError from "../components/auth/FormError";
+import { gql, useMutation } from "@apollo/client";
+import {
+  MutationCreateAccountArgs,
+  MutationResponse,
+} from "../generated/graphql";
+import { useNavigate } from "react-router-dom";
 
 const HeaderContainer = styled.div`
   display: flex;
@@ -22,7 +30,70 @@ const Subtitle = styled(FatLink)`
   margin-top: 10px;
 `;
 
+interface SignUpForm {
+  firstName: string;
+  lastName: string;
+  name: string;
+  email: string;
+  username: string;
+  password: string;
+  result: string;
+}
+
+const CREATE_MUTATION = gql`
+  mutation createAccount(
+    $email: String!
+    $firstName: String!
+    $lastName: String!
+    $password: String!
+    $username: String!
+  ) {
+    createAccount(
+      email: $email
+      firstName: $firstName
+      lastName: $lastName
+      password: $password
+      username: $username
+    ) {
+      ok
+      error
+    }
+  }
+`;
+
 const SignUp = () => {
+  const navigate = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isValid },
+    clearErrors,
+  } = useForm<SignUpForm>({
+    mode: "onChange",
+  });
+
+  const onCompleted = (data: any) => {
+    const {
+      createAccount: { ok, error },
+    } = data;
+    if (!ok) {
+      return;
+    }
+    navigate(routes.home, { replace: true });
+  };
+
+  const [createAccount, { loading }] = useMutation<MutationResponse>(
+    CREATE_MUTATION,
+    { onCompleted }
+  );
+
+  const onSubmitValid = (data: SignUpForm) => {
+    if (loading) return;
+    createAccount({
+      variables: { ...data },
+    });
+  };
   return (
     <AuthLayout>
       <PageTitle title="Sign Up" />
@@ -33,12 +104,41 @@ const SignUp = () => {
             Sign up to see photos and videos from your friends
           </Subtitle>
         </HeaderContainer>
-        <form>
-          <Input placeholder="Name" type="text" />
-          <Input placeholder="Email" type="text" />
-          <Input placeholder="Username" type="text" />
-          <Input placeholder="Password" type="password" />
-          <Button type="submit">Sign Up</Button>
+        <form onSubmit={handleSubmit(onSubmitValid)}>
+          <Input
+            {...register("firstName", { required: "First Name is required" })}
+            placeholder="First Name"
+            type="text"
+          />
+          <Input
+            {...register("lastName", { required: "Last Name is required" })}
+            placeholder="Last Name"
+            type="text"
+          />
+          <Input
+            {...register("name", { required: "is required" })}
+            placeholder="Name"
+            type="text"
+          />
+          <Input
+            {...register("email", { required: "Email is required" })}
+            placeholder="Email"
+            type="text"
+          />
+          <Input
+            {...register("username", { required: "Username is required" })}
+            placeholder="Username"
+            type="text"
+          />
+          <Input
+            {...register("password", { required: "Password is required" })}
+            placeholder="Password"
+            type="password"
+          />
+          <Button type="submit" disabled={!isValid || loading}>
+            Sign Up
+          </Button>
+          <FormError message={errors?.result?.message} />
         </form>
       </FormBox>
       <BottomBox link={routes.home} linkText="Log In" ctx="Have an account?" />

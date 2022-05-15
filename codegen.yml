@@ -1,6 +1,5 @@
 overwrite: true
 schema: "http://localhost:4000/graphql"
-documents: "src/**/*.graphql"
 generates:
   src/generated/graphql.tsx:
     plugins:
@@ -10,7 +9,3 @@ generates:
   ./graphql.schema.json:
     plugins:
       - "introspection"
-# "generate-config": "graphql-codegen --config codegen.yml",
-# "generate": "graphql-codegen",
-# "prestart": "yarn generate",
-# "predev": "yarn generate"
