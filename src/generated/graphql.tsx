@@ -187,6 +187,7 @@ export type Photo = {
 
 export type Query = {
   __typename?: 'Query';
+  me?: Maybe<User>;
   searchPhotos?: Maybe<Array<Maybe<Photo>>>;
   searchUser?: Maybe<Array<Maybe<User>>>;
   seeFeed?: Maybe<Array<Maybe<Photo>>>;
