@@ -7,6 +7,7 @@ import { Query } from "../generated/graphql";
 const ME_QUERY = gql`
   query me {
     me {
+      id
       username
       avatar
     }
@@ -24,7 +25,7 @@ const useUser = () => {
       logUserOut();
     }
   }, [data]);
-  return;
+  return { data, loading: !data && !error };
 };
 
 export default useUser;

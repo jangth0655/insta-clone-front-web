@@ -174,11 +174,13 @@ export type MutationResponse = {
 export type Photo = {
   __typename?: 'Photo';
   caption?: Maybe<Scalars['String']>;
-  comments?: Maybe<Scalars['Int']>;
+  commentNumber?: Maybe<Scalars['Int']>;
+  comments?: Maybe<Array<Maybe<Comment>>>;
   createdAt: Scalars['String'];
   file: Scalars['String'];
   hashtags?: Maybe<Array<Maybe<Hashtag>>>;
   id: Scalars['Int'];
+  isLiked: Scalars['Boolean'];
   isMine: Scalars['Boolean'];
   likes?: Maybe<Scalars['Int']>;
   updatedAt: Scalars['String'];
