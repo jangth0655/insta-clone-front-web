@@ -12,6 +12,7 @@ import { faHeart as SolidHeart } from "@fortawesome/free-solid-svg-icons";
 import { ApolloCache, gql, useMutation } from "@apollo/client";
 import { Comment, Maybe, User } from "../../generated/graphql";
 import CommentList from "./CommentList";
+import { Link } from "react-router-dom";
 
 const TOGGLE_LIKE_MUTATION = gql`
   mutation toggleLike($id: Int!) {
@@ -78,7 +79,16 @@ interface PhotoProps {
   file?: string | null;
   caption?: string | null;
   commentNumber?: number | null;
-  comments?: Maybe<Maybe<Comment>[]>;
+  comments?: {
+    id: number;
+    payload: string;
+    isMine: boolean;
+    createdAt: string;
+    user: {
+      username: string;
+      avatar: string;
+    };
+  }[];
 }
 
 interface toggleLikeMutation {
@@ -87,11 +97,6 @@ interface toggleLikeMutation {
     error?: string;
   };
 }
-
-type CacheData = {
-  isLiked: boolean;
-  likes: number;
-};
 
 const PhotoItem = ({
   id,
@@ -111,29 +116,21 @@ const PhotoItem = ({
     } = result;
 
     if (ok) {
-      const fragmentId = `Photo:${id}`;
-      const fragment = gql`
-        fragment BSName on Photo {
-          isLiked
-          likes
-        }
-      `;
-      const cacheData = cache.readFragment<CacheData>({
-        id: fragmentId,
-        fragment,
-      });
-
-      if (cacheData && "isLiked" in cacheData && "likes" in cacheData) {
-        const { isLiked: cacheIsLiked, likes: cacheLikes } = cacheData;
-        cache.writeFragment<CacheData>({
-          id: fragmentId,
-          fragment,
-          data: {
-            isLiked: !cacheIsLiked,
-            likes: cacheIsLiked ? cacheLikes - 1 : cacheLikes + 1,
+      const photoId = `Photo:${id}`;
+      cache.modify({
+        id: photoId,
+        fields: {
+          isLiked: (prev) => {
+            return !prev;
           },
-        });
-      }
+          likes: (prev) => {
+            if (isLiked) {
+              return prev - 1;
+            }
+            return prev + 1;
+          },
+        },
+      });
     }
   };
   const [toggleLikMutation] = useMutation<toggleLikeMutation>(
@@ -149,8 +146,13 @@ const PhotoItem = ({
   return (
     <PhotoContainer key={id}>
       <PhotoHeader>
-        <Avatar lg url={user?.avatar} />
-        <Username>{user?.username}</Username>
+        <Link to={`/users/${user?.username}`}>
+          <Avatar lg url={user?.avatar} />
+        </Link>
+
+        <Link to={`/users/${user?.username}`}>
+          <Username>{user?.username}</Username>
+        </Link>
       </PhotoHeader>
       {file ? <PhotoFile src={file} /> : null}
       <PhotoData>
@@ -177,9 +179,11 @@ const PhotoItem = ({
         <Likes>{likes === 1 ? "1 like" : `${likes} likes`}</Likes>
         <CommentList
           {...comments}
+          comments={comments}
           commentNumber={commentNumber}
           caption={caption}
           user={user}
+          photoId={id}
         />
       </PhotoData>
     </PhotoContainer>

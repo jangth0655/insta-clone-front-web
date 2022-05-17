@@ -168,6 +168,7 @@ export type MutationUploadPhotoArgs = {
 export type MutationResponse = {
   __typename?: 'MutationResponse';
   error?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['Int']>;
   ok: Scalars['Boolean'];
 };
 
