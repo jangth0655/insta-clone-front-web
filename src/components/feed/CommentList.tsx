@@ -62,7 +62,7 @@ const CommentList = ({
         createComment: { ok, id },
       },
     } = result;
-    if (ok && userData?.me) {
+    if (ok && userData) {
       const newComment = {
         __typename: "Comment",
         createdAt: Date.now() + "",
@@ -70,7 +70,7 @@ const CommentList = ({
         isMine: true,
         payload: getValues("payload"),
         user: {
-          ...userData?.me,
+          ...userData,
         },
       };
       reset();

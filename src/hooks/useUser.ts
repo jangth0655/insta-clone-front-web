@@ -4,19 +4,31 @@ import { useEffect } from "react";
 import { isLoggedInVar } from "../apollo";
 import { Query } from "../generated/graphql";
 
-const ME_QUERY = gql`
+export const ME_QUERY = gql`
   query me {
     me {
       id
       username
       avatar
+      totalFollowing
+      totalFollowers
     }
   }
 `;
 
+export interface IUser {
+  me: {
+    id: number;
+    username: string;
+    avatar: string;
+    totalFollowing: number;
+    totalFollowers: number;
+  };
+}
+
 const useUser = () => {
   const hasToken = useReactiveVar(isLoggedInVar);
-  const { data, error } = useQuery<Query>(ME_QUERY, {
+  const { data, error } = useQuery<IUser>(ME_QUERY, {
     skip: !hasToken,
   });
 
